@@ -36,5 +36,6 @@ ignore = [
 
 [dependency-groups]
 dev = [
+    "ipython>=9.10.0",
     "ruff>=0.15.0",
 ]
