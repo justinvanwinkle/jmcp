@@ -21,7 +21,7 @@ def main():
             continue
 
         response = handle_request(msg.get("method", ""), msg.get("params"), msg["id"])
-        sys.stdout.write(json.dumps(response) + "\n")
+        sys.stdout.write(json.dumps(response, indent=2) + "\n")
         sys.stdout.flush()
 
 

@@ -1,3 +1,5 @@
+from jmcp.tools import code_search
+
 PROTOCOL_VERSION = "2025-03-26"
 
 TOOLS = [
@@ -12,6 +14,7 @@ TOOLS = [
             "required": ["name"],
         },
     },
+    code_search.TOOL_DEF,
 ]
 
 
@@ -19,6 +22,8 @@ def handle_tool_call(name, arguments):
     match name:
         case "hello":
             return f"Hello, {arguments['name']}!"
+        case "code_search":
+            return code_search.execute(arguments["name"])
         case _:
             raise ValueError(f"Unknown tool: {name}")
 
