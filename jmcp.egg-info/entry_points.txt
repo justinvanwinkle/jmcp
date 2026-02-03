@@ -1,0 +1,2 @@
+[console_scripts]
+jmcp = jmcp.__main__:main

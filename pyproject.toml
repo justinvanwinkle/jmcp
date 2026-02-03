@@ -5,3 +5,30 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = []
+
+[project.scripts]
+jmcp = "jmcp.__main__:main"
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "ANN",     # type annotations — explicitly unwanted
+    "D",       # docstrings
+    "A002",    # shadowing builtins (id) — intentional for JSON-RPC
+    "TRY003",  # long exception messages
+    "EM102",   # f-string in exceptions
+    "PLW2901", # loop var overwritten — idiomatic .strip()
+    "COM812",  # trailing comma — conflicts with formatter
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["D104"]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.0",
+]
