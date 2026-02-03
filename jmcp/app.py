@@ -46,7 +46,7 @@ class MCPApp:
     def _send(self, data: dict):
         try:
             # MCP stdio transport: line-delimited JSON
-            json_str = json.dumps(data, indent=2)
+            json_str = json.dumps(data)
             self.stdout.write(json_str + "\n")
             self.stdout.flush()
         except Exception:

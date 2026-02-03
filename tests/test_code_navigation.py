@@ -1,4 +1,5 @@
 from pathlib import Path
+
 from jmcp.tools import code_navigation
 
 FAKE_LIB = Path(__file__).parent / "src/fake_lib"

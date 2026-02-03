@@ -1,4 +1,5 @@
 from pathlib import Path
+
 from jmcp.tools import code_search
 
 # Path to fake lib
@@ -9,7 +10,7 @@ def test_code_search_hello():
     result = code_search.execute("hello", root_path=FAKE_LIB)
     assert "File: fake_lib/module.py" in result
     assert "def hello(name):" in result
-    assert 'print(f"Hello {name}")' in result
+    assert '"""Say hello."""' in result
 
 
 def test_code_search_class():

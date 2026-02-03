@@ -33,7 +33,8 @@ class LspClient:
             bufsize=0,
         )
         if self._proc.stdout is None or self._proc.stdin is None:
-            raise RuntimeError("Failed to open LSP process pipes")
+            msg = "Failed to open LSP process pipes"
+            raise RuntimeError(msg)
 
         # Start reader thread
         self._reader_thread = threading.Thread(target=self._reader_loop, daemon=True)
@@ -49,23 +50,30 @@ class LspClient:
     def _path_to_uri(self, path: Path | str) -> str:
         return f"file://{Path(path).resolve()}"
 
+    def _read_headers(self) -> dict[str, str] | None:
+        headers = {}
+        while True:
+            line = self._proc.stdout.readline().decode("utf-8").strip()
+            if not line:
+                if not headers:
+                    return None
+                break
+            if ":" in line:
+                key, value = line.split(":", 1)
+                headers[key.strip()] = value.strip()
+        return headers
+
     def _reader_loop(self):
         """Reads JSON-RPC messages from stdout."""
-        assert self._proc and self._proc.stdout
+        if not self._proc or not self._proc.stdout:
+            logger.error("Reader loop started without pipes")
+            return
+
         while True:
             try:
-                # Read Content-Length
-                headers = {}
-                while True:
-                    line = self._proc.stdout.readline().decode("utf-8").strip()
-                    if not line:
-                        if not headers:
-                            # End of stream?
-                            return
-                        break
-                    if ":" in line:
-                        key, value = line.split(":", 1)
-                        headers[key.strip()] = value.strip()
+                headers = self._read_headers()
+                if headers is None:
+                    return
 
                 length = int(headers.get("Content-Length", 0))
                 if length == 0:
@@ -89,7 +97,10 @@ class LspClient:
                 break
 
     def send(self, payload):
-        assert self._proc and self._proc.stdin
+        if not self._proc or not self._proc.stdin:
+            msg = "LSP process not ready"
+            raise RuntimeError(msg)
+
         body = json.dumps(payload)
         msg = f"Content-Length: {len(body)}\r\n\r\n{body}"
         with self._lock:
@@ -137,7 +148,7 @@ class LspClient:
         try:
             content = path.read_text()
         except FileNotFoundError:
-            raise ValueError(f"File not found: {file_path}")
+            raise ValueError(f"File not found: {file_path}") from None
 
         self.notify(
             "textDocument/didOpen",
@@ -159,7 +170,7 @@ class LspClient:
         uri = self._path_to_uri(file_path)
 
         # LSP uses 0-based lines
-        result = self.request(
+        return self.request(
             "textDocument/definition",
             {
                 "textDocument": {"uri": uri},

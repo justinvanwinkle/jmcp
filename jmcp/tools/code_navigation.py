@@ -1,7 +1,11 @@
+import logging
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 from jmcp.lsp import get_client
+
+logger = logging.getLogger(__name__)
+SNIPPET_MAX_LINES = 20
 
 TOOL_DEF = {
     "name": "goto_definition",
@@ -44,6 +48,7 @@ def execute(file: str, line: int, col: int = 0) -> str:
     try:
         result = client.goto_definition(file, lsp_line, col)
     except Exception as e:
+        logger.exception("Error querying language server")
         return f"Error querying language server: {e}"
 
     if not result:
@@ -56,10 +61,10 @@ def execute(file: str, line: int, col: int = 0) -> str:
     for loc in locations:
         # Handle LocationLink (has targetUri) vs Location (has uri)
         uri = loc.get("uri") or loc.get("targetUri")
-        range_ = loc.get("range") or loc.get(
-            "targetSelectionRange"
-        )  # LocationLink uses targetSelectionRange for the symbol
-        # Fallback for LocationLink: targetRange is the full extent, targetSelectionRange is the name
+        # LocationLink uses targetSelectionRange for the symbol
+        range_ = loc.get("range") or loc.get("targetSelectionRange")
+        # Fallback for LocationLink: targetRange is the full extent,
+        # targetSelectionRange is the name
         if not range_ and "targetRange" in loc:
             range_ = loc["targetRange"]
 
@@ -79,29 +84,27 @@ def execute(file: str, line: int, col: int = 0) -> str:
         try:
             content = path.read_text().splitlines()
             # Extract relevant lines
-            # If it's a single line match, show it.
-            # If it's a block, show up to 10 lines?
-            # Or just show the signature?
-
             snippet = []
             snippet_len = end_line - start_line + 1
-            if snippet_len > 20:
+            if snippet_len > SNIPPET_MAX_LINES:
                 # Truncate
-                for i in range(start_line, start_line + 20):
-                    if i < len(content):
-                        snippet.append(content[i])
+                snippet.extend(
+                    content[i]
+                    for i in range(start_line, start_line + SNIPPET_MAX_LINES)
+                    if i < len(content)
+                )
                 snippet.append("... (truncated) ...")
             else:
-                for i in range(start_line, end_line + 1):
-                    if i < len(content):
-                        snippet.append(content[i])
+                snippet.extend(
+                    content[i] for i in range(start_line, end_line + 1) if i < len(content)
+                )
 
             snippet_str = "\n".join(snippet)
             output.append(
                 f"### Definition at {rel_path}:{start_line + 1}\n```python\n{snippet_str}\n```"
             )
 
-        except Exception:
+        except OSError:
             output.append(f"- {rel_path}:{start_line + 1}")
 
     return "\n\n".join(output)
