@@ -22,7 +22,7 @@ class LspClient:
         self.start()
 
     def start(self):
-        cmd = ["uv", "run", "ty", "server"]
+        cmd = ["ty", "server"]
         # Use a separate process group or detach if needed?
         # For now, just simple Popen
         self._proc = subprocess.Popen(
