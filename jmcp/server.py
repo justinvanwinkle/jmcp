@@ -32,42 +32,9 @@ def make_error(id, code, message):
 
 
 def handle_request(method, params, id):
-    match method:
-        case "initialize":
-            return make_response(
-                id,
-                {
-                    "protocolVersion": PROTOCOL_VERSION,
-                    "capabilities": {"tools": {}},
-                    "serverInfo": {"name": "jmcp", "version": "0.1.0"},
-                },
-            )
+    from jmcp.routes import Routes
 
-        case "ping":
-            return make_response(id, {})
-
-        case "tools/list":
-            return make_response(id, {"tools": TOOLS})
-
-        case "tools/call":
-            name = params["name"]
-            arguments = params.get("arguments", {})
-            try:
-                text = handle_tool_call(name, arguments)
-                return make_response(
-                    id,
-                    {
-                        "content": [{"type": "text", "text": text}],
-                    },
-                )
-            except Exception as e:  # noqa: BLE001
-                return make_response(
-                    id,
-                    {
-                        "content": [{"type": "text", "text": str(e)}],
-                        "isError": True,
-                    },
-                )
-
-        case _:
-            return make_error(id, -32601, f"Method not found: {method}")
+    handler = Routes.methods().get(method)
+    if handler is None:
+        return make_error(id, -32601, f"Method not found: {method}")
+    return handler(params, id)
