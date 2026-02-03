@@ -1,6 +1,7 @@
-import json
 import io
-from unittest.mock import MagicMock, patch
+import json
+from unittest.mock import patch
+
 from jmcp.app import MCPApp
 
 

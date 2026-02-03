@@ -1,35 +1,36 @@
-from unittest.mock import patch, MagicMock
+from pathlib import Path
 from jmcp.tools import code_search
 
-
-def test_code_search_git_not_found():
-    with patch("subprocess.run", side_effect=FileNotFoundError):
-        result = code_search.execute("some_func")
-        assert "Error: git command not found" in result
+# Path to fake lib
+FAKE_LIB = Path(__file__).parent / "src"
 
 
-def test_code_search_no_matches():
-    mock_run = MagicMock()
-    mock_run.returncode = 1
-    mock_run.stdout = ""
-
-    with patch("subprocess.run", return_value=mock_run):
-        result = code_search.execute("missing_func")
-        assert "No symbol named 'missing_func' found" in result
+def test_code_search_hello():
+    result = code_search.execute("hello", root_path=FAKE_LIB)
+    assert "File: fake_lib/module.py" in result
+    assert "def hello(name):" in result
+    assert 'print(f"Hello {name}")' in result
 
 
-def test_code_search_success():
-    mock_run = MagicMock()
-    mock_run.returncode = 0
-    # Simulate git grep -W output
-    # format: file:line:content
-    mock_run.stdout = """file.py:10:def target_func():
-file.py-11-    print("hello")
-file.py-12-    return True
-"""
+def test_code_search_class():
+    result = code_search.execute("Greeter", root_path=FAKE_LIB)
+    assert "class Greeter:" in result
+    assert "def greet(self):" in result
 
-    with patch("subprocess.run", return_value=mock_run):
-        result = code_search.execute("target_func")
-        assert "File: file.py:10" in result
-        assert "def target_func():" in result
-        assert 'print("hello")' in result
+
+def test_code_search_method():
+    # git grep -W might return the class containing the method
+    result = code_search.execute("greet", root_path=FAKE_LIB)
+    # It should find Greeter.greet
+    assert "def greet(self):" in result
+
+
+def test_code_search_deep():
+    result = code_search.execute("deep_func", root_path=FAKE_LIB)
+    assert "fake_lib/deep/nested.py" in result
+    assert "def deep_func():" in result
+
+
+def test_code_search_missing():
+    result = code_search.execute("missing_thing", root_path=FAKE_LIB)
+    assert "No symbol named 'missing_thing' found" in result

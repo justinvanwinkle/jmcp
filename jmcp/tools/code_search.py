@@ -21,12 +21,13 @@ TOOL_DEF = {
 MAX_LINES = 100
 
 
-def execute(name: str) -> str:
+def execute(name: str, root_path: Path | None = None) -> str:
     # 1. Run git grep
     # We use -P for PCRE to support \b and \s reliably
     # -n for line numbers
     # -W for function context
     # -I to ignore binary files
+    cwd = root_path or Path.cwd()
     try:
         cmd = [
             "git",
@@ -37,8 +38,8 @@ def execute(name: str) -> str:
             "-P",
             f"^\\s*(class|def)\\s+{re.escape(name)}\\b",
         ]
-        # We run inside the current working directory
-        result = subprocess.run(cmd, capture_output=True, text=True, cwd=Path.cwd(), check=False)
+        # We run inside the specified directory
+        result = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd, check=False)
     except FileNotFoundError:
         return "Error: git command not found."
 
@@ -141,10 +142,6 @@ def execute(name: str) -> str:
         i += 1
 
     if not results:
-        # Fallback: maybe git grep found it but our parser missed it?
-        # Or maybe the regex match was fuzzy?
-        # If git grep returned 0, we should have found something.
-        # But maybe we filtered it out?
         return f"Found matches for '{name}' but failed to extract body."
 
     return "\n\n".join(results)

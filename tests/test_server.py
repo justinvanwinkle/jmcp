@@ -1,4 +1,3 @@
-import json
 from jmcp.server import handle_request
 
 

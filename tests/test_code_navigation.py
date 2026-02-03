@@ -1,36 +1,52 @@
-from unittest.mock import patch, MagicMock
 from jmcp.tools import code_navigation
 
 
-def test_goto_definition_success():
-    mock_client = MagicMock()
-    # Mock result: Location
-    mock_client.goto_definition.return_value = {
-        "uri": "file:///tmp/repo/test.py",
-        "range": {"start": {"line": 10, "character": 0}, "end": {"line": 10, "character": 10}},
-    }
+def test_goto_definition_greeter():
+    # usage: g = Greeter("World") in use_greeter
+    # use_greeter is at bottom of file.
+    # Greeter usage is inside use_greeter function.
 
-    with (
-        patch("jmcp.tools.code_navigation.get_client", return_value=mock_client),
-        patch("pathlib.Path.read_text", return_value="line 1\n" * 20),
-        patch("jmcp.tools.code_navigation.Path.cwd", return_value="/tmp/repo"),
-    ):
-        # We need to mock pathlib.Path behaviour slightly more carefully or use real paths?
-        # The tool uses Path(uri) -> relative_to(cwd).
-        # We can just check the output string construction.
+    # We need exact line/col.
+    # Let's read the file to find line.
+    from pathlib import Path
 
-        # Actually, mocking Path is tricky.
-        # Let's mock the `uri_to_path` helper or just let it run if we control the URI.
-        # But `Path.read_text` needs to be mocked on the specific instance.
-        pass
+    module_path = Path("tests/src/fake_lib/module.py")
+    lines = module_path.read_text().splitlines()
 
+    usage_line = -1
+    for i, line in enumerate(lines):
+        if 'g = Greeter("World")' in line:
+            usage_line = i + 1
+            break
 
-# Simplified test that just mocks the client interaction
-def test_execute_calls_client():
-    mock_client = MagicMock()
-    mock_client.goto_definition.return_value = None
+    assert usage_line != -1
 
-    with patch("jmcp.tools.code_navigation.get_client", return_value=mock_client):
-        result = code_navigation.execute("file.py", 10, 5)
-        mock_client.goto_definition.assert_called_with("file.py", 9, 5)  # 1-based -> 0-based
-        assert "No definition found" in result
+    # Col of Greeter
+    #    g = Greeter("World")
+    # 012345678
+    # G starts at 8 (4 spaces indent + g = ) = 4 + 4 = 8?
+    # No, 4 spaces. "    g = Greeter"
+    # 012345678
+    # G is at index 8.
+
+    import time
+
+    start_time = time.time()
+    result = "No definition found."
+    found = False
+    while time.time() - start_time < 5:
+        # Try a range of columns around the identifier to be safe
+        for offset in range(0, 5):
+            result = code_navigation.execute(str(module_path), usage_line, 8 + offset)
+            if "class Greeter:" in result:
+                found = True
+                break
+        if found:
+            break
+        time.sleep(0.1)
+
+    # Expect definition of Greeter
+    # class Greeter:
+    assert found, f"Failed to find definition. Last result: {result}"
+    assert "class Greeter:" in result
+    assert "tests/src/fake_lib/module.py" in result

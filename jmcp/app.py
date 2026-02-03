@@ -41,7 +41,7 @@ class MCPApp:
                 self._send(response)
             except Exception as e:
                 logger.exception("Error handling request")
-                self._send(make_error(msg["id"], -32603, f"Internal error: {str(e)}"))
+                self._send(make_error(msg["id"], -32603, f"Internal error: {e!s}"))
 
     def _send(self, data: dict):
         try:
