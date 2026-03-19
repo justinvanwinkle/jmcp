@@ -1,4 +1,4 @@
-from jmcp.tools import code_navigation, code_search
+from jmcp.tools import add_import, code_navigation, code_search, deep_search
 
 PROTOCOL_VERSION = "2025-03-26"
 
@@ -16,6 +16,8 @@ TOOLS = [
     },
     code_search.TOOL_DEF,
     code_navigation.TOOL_DEF,
+    deep_search.TOOL_DEF,
+    add_import.TOOL_DEF,
 ]
 
 
@@ -29,6 +31,10 @@ def handle_tool_call(name, arguments):
             return code_navigation.execute(
                 arguments["file"], arguments["line"], arguments.get("col", 0)
             )
+        case "deep_search":
+            return deep_search.execute(arguments["name"])
+        case "add_import":
+            return add_import.execute(arguments["imports"], arguments["files"])
         case _:
             raise ValueError(f"Unknown tool: {name}")
 
