@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
-from urllib.parse import unquote, urlparse
+from urllib.parse import unquote
+from urllib.parse import urlparse
 
 from jmcp.lsp import get_client
 
@@ -47,11 +48,7 @@ def uri_to_path(uri: str) -> Path:
 
 
 def execute(
-    file: str,
-    line: int,
-    col: int = 0,
-    *,
-    include_declaration: bool = False,
+    file: str, line: int, col: int = 0, *, include_declaration: bool = False
 ) -> str:
     client = get_client()
 

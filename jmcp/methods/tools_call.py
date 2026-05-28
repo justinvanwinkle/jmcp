@@ -1,4 +1,5 @@
-from jmcp.server import handle_tool_call, make_response
+from jmcp.server import handle_tool_call
+from jmcp.server import make_response
 
 
 def handle_tools_call(params, id):
@@ -6,12 +7,8 @@ def handle_tools_call(params, id):
     arguments = params.get("arguments", {})
     try:
         text = handle_tool_call(name, arguments)
-        return make_response(
-            id,
-            {"content": [{"type": "text", "text": text}]},
-        )
+        return make_response(id, {"content": [{"type": "text", "text": text}]})
     except Exception as e:  # noqa: BLE001
         return make_response(
-            id,
-            {"content": [{"type": "text", "text": str(e)}], "isError": True},
+            id, {"content": [{"type": "text", "text": str(e)}], "isError": True}
         )

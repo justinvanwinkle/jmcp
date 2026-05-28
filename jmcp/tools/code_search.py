@@ -11,7 +11,7 @@ TOOL_DEF = {
             "name": {
                 "type": "string",
                 "description": "The name of the function or class to find",
-            },
+            }
         },
         "required": ["name"],
     },
@@ -31,7 +31,9 @@ def _run_grep(name: str, cwd: Path) -> subprocess.CompletedProcess:
         "-P",
         f"^\\s*(class|def)\\s+{re.escape(name)}\\b",
     ]
-    return subprocess.run(cmd, capture_output=True, text=True, cwd=cwd, check=False)
+    return subprocess.run(
+        cmd, capture_output=True, text=True, cwd=cwd, check=False
+    )
 
 
 def _parse_grep_output(output: str) -> list[dict]:
@@ -50,14 +52,12 @@ def _parse_grep_output(output: str) -> list[dict]:
             continue
 
         filename, sep, line_num, content = m.groups()
-        parsed_lines.append(
-            {
-                "file": filename,
-                "line": int(line_num),
-                "content": content,
-                "is_match": (sep == ":"),
-            }
-        )
+        parsed_lines.append({
+            "file": filename,
+            "line": int(line_num),
+            "content": content,
+            "is_match": (sep == ":"),
+        })
     return parsed_lines
 
 
@@ -84,7 +84,9 @@ def _extract_body(parsed_lines: list[dict], start_idx: int) -> tuple[str, int]:
             body_lines.append(next_content)
         else:
             next_indent_match = re.match(r"^(\s*)", next_content)
-            next_indent = len(next_indent_match.group(1)) if next_indent_match else 0
+            next_indent = (
+                len(next_indent_match.group(1)) if next_indent_match else 0
+            )
             if next_indent > base_indent:
                 body_lines.append(next_content)
             else:
@@ -94,7 +96,9 @@ def _extract_body(parsed_lines: list[dict], start_idx: int) -> tuple[str, int]:
     content_str = "\n".join(body_lines)
     if len(body_lines) > MAX_LINES:
         truncated_body = body_lines[:MAX_LINES]
-        truncated_body.append(f"... (truncated {len(body_lines) - MAX_LINES} more lines) ...")
+        truncated_body.append(
+            f"... (truncated {len(body_lines) - MAX_LINES} more lines) ..."
+        )
         content_str = "\n".join(truncated_body)
 
     return content_str, j
@@ -134,7 +138,9 @@ def execute(name: str, root_path: Path | None = None) -> str:
 
             start_line = item["line"]
             filename = item["file"]
-            results.append(f"File: {filename}:{start_line}\n```python\n{content_str}\n```")
+            results.append(
+                f"File: {filename}:{start_line}\n```python\n{content_str}\n```"
+            )
             # In original code, `i` was incremented by 1 at loop end.
             # If I extracted a body, I should probably skip it?
             # But overlapping definitions (nested functions) might be interesting?

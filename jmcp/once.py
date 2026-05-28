@@ -1,6 +1,7 @@
 import threading
 from collections.abc import Callable
-from functools import cache, wraps
+from functools import cache
+from functools import wraps
 
 
 def once[T](func: Callable[[], T]) -> Callable[[], T]:

@@ -37,11 +37,15 @@ class MCPApp:
 
             try:
                 # Dispatch request
-                response = handle_request(msg.get("method", ""), msg.get("params"), msg["id"])
+                response = handle_request(
+                    msg.get("method", ""), msg.get("params"), msg["id"]
+                )
                 self._send(response)
             except Exception as e:
                 logger.exception("Error handling request")
-                self._send(make_error(msg["id"], -32603, f"Internal error: {e!s}"))
+                self._send(
+                    make_error(msg["id"], -32603, f"Internal error: {e!s}")
+                )
 
     def _send(self, data: dict):
         try:

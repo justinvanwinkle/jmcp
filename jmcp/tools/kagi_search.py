@@ -17,10 +17,7 @@ TOOL_DEF = {
     "inputSchema": {
         "type": "object",
         "properties": {
-            "query": {
-                "type": "string",
-                "description": "The search query.",
-            },
+            "query": {"type": "string", "description": "The search query."},
             "limit": {
                 "type": "integer",
                 "description": "Maximum number of results (1-10). Defaults to 5.",
@@ -42,8 +39,7 @@ MAX_LIMIT = 10
 def _fetch(query: str, limit: int, api_key: str) -> dict:
     qs = urllib.parse.urlencode({"q": query, "limit": limit})
     req = urllib.request.Request(  # noqa: S310 (https URL is fixed)
-        f"{API_URL}?{qs}",
-        headers={"Authorization": f"Bot {api_key}"},
+        f"{API_URL}?{qs}", headers={"Authorization": f"Bot {api_key}"}
     )
     with urllib.request.urlopen(req, timeout=TIMEOUT_SECONDS) as resp:  # noqa: S310
         return json.loads(resp.read())
@@ -53,8 +49,7 @@ def _format_results(payload: dict) -> str:
     data = payload.get("data") or []
     results = [item for item in data if item.get("t") == 0]
     related = next(
-        (item.get("list", []) for item in data if item.get("t") == 1),
-        [],
+        (item.get("list", []) for item in data if item.get("t") == 1), []
     )
 
     if not results:

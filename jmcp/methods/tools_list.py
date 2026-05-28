@@ -1,4 +1,5 @@
-from jmcp.server import TOOLS, make_response
+from jmcp.server import make_response
+from jmcp.server import TOOLS
 
 
 def handle_tools_list(params, id):

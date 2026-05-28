@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
-from urllib.parse import unquote, urlparse
+from urllib.parse import unquote
+from urllib.parse import urlparse
 
 from jmcp.lsp import get_client
 
@@ -96,7 +97,9 @@ def execute(file: str, line: int, col: int = 0) -> str:
                 snippet.append("... (truncated) ...")
             else:
                 snippet.extend(
-                    content[i] for i in range(start_line, end_line + 1) if i < len(content)
+                    content[i]
+                    for i in range(start_line, end_line + 1)
+                    if i < len(content)
                 )
 
             snippet_str = "\n".join(snippet)

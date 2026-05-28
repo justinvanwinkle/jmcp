@@ -37,7 +37,9 @@ class LspClient:
             raise RuntimeError(msg)
 
         # Start reader thread
-        self._reader_thread = threading.Thread(target=self._reader_loop, daemon=True)
+        self._reader_thread = threading.Thread(
+            target=self._reader_loop, daemon=True
+        )
         self._reader_thread.start()
 
         # Initialize
@@ -46,7 +48,9 @@ class LspClient:
             "initialize",
             {
                 "rootUri": root_uri,
-                "workspaceFolders": [{"uri": root_uri, "name": self._root.name}],
+                "workspaceFolders": [
+                    {"uri": root_uri, "name": self._root.name}
+                ],
                 "capabilities": {},
             },
         )
@@ -119,7 +123,12 @@ class LspClient:
             event = threading.Event()
             self._events[req_id] = event
 
-        payload = {"jsonrpc": "2.0", "id": req_id, "method": method, "params": params}
+        payload = {
+            "jsonrpc": "2.0",
+            "id": req_id,
+            "method": method,
+            "params": params,
+        }
         self.send(payload)
 
         # Wait for response

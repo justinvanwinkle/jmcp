@@ -4,9 +4,13 @@ import logging
 import re
 import tokenize
 from pathlib import Path
-from urllib.parse import unquote, urlparse
+from urllib.parse import unquote
+from urllib.parse import urlparse
 
-from jmcp.tools.code_search import MAX_LINES, _extract_body, _parse_grep_output, _run_grep
+from jmcp.tools.code_search import _extract_body
+from jmcp.tools.code_search import _parse_grep_output
+from jmcp.tools.code_search import _run_grep
+from jmcp.tools.code_search import MAX_LINES
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +26,7 @@ TOOL_DEF = {
             "name": {
                 "type": "string",
                 "description": "The name of the function or class to find",
-            },
+            }
         },
         "required": ["name"],
     },
@@ -48,13 +52,11 @@ def _find_definitions(name: str, cwd: Path) -> list[dict]:
             rf"^\s*(class|def)\s+{re.escape(name)}\b", item["content"]
         ):
             body, _ = _extract_body(parsed, i)
-            defs.append(
-                {
-                    "file": item["file"],
-                    "line": item["line"],
-                    "body": body,
-                }
-            )
+            defs.append({
+                "file": item["file"],
+                "line": item["line"],
+                "body": body,
+            })
         i += 1
     return defs
 
@@ -111,7 +113,11 @@ def _read_definition_body(path: Path, start_line: int) -> str:
 
 def _resolve_location(loc: dict) -> tuple[Path, int, int] | None:
     uri = loc.get("uri") or loc.get("targetUri")
-    range_ = loc.get("range") or loc.get("targetSelectionRange") or loc.get("targetRange")
+    range_ = (
+        loc.get("range")
+        or loc.get("targetSelectionRange")
+        or loc.get("targetRange")
+    )
     if not uri or not range_:
         return None
     return _uri_to_path(uri), range_["start"]["line"], range_["end"]["line"]
@@ -147,7 +153,13 @@ def _collect_resolved_definitions(
 
         for loc in result if isinstance(result, list) else [result]:
             formatted = _format_resolved_location(
-                loc, file_path, start_line, body_line_count, project_root, cwd, seen
+                loc,
+                file_path,
+                start_line,
+                body_line_count,
+                project_root,
+                cwd,
+                seen,
             )
             if formatted:
                 resolved.append(formatted)
@@ -177,7 +189,10 @@ def _format_resolved_location(
     # Skip definitions inside the searched function itself
     abs_file = Path(file_path).resolve()
     func_start_0 = start_line - 1
-    if path == abs_file and func_start_0 <= def_start < func_start_0 + body_line_count:
+    if (
+        path == abs_file
+        and func_start_0 <= def_start < func_start_0 + body_line_count
+    ):
         return None
 
     # Skip definitions outside the project (stdlib, site-packages)
@@ -217,7 +232,14 @@ def execute(name: str, root_path: Path | None = None) -> str:
     client = get_client()
     names = _tokenize_names(body)
     resolved = _collect_resolved_definitions(
-        client, names, name, file_path, start_line, body_line_count, cwd.resolve(), cwd
+        client,
+        names,
+        name,
+        file_path,
+        start_line,
+        body_line_count,
+        cwd.resolve(),
+        cwd,
     )
     output.extend(resolved)
     return "\n\n".join(output)

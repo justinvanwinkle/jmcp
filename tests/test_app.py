@@ -36,7 +36,9 @@ def test_app_json_error():
 
 def test_app_exception_handling():
     # Simulate a request that causes internal error (e.g. by mocking handler)
-    input_data = '{"jsonrpc": "2.0", "id": 1, "method": "crash", "params": {}}\n'
+    input_data = (
+        '{"jsonrpc": "2.0", "id": 1, "method": "crash", "params": {}}\n'
+    )
     stdin = io.StringIO(input_data)
     stdout = io.StringIO()
 
