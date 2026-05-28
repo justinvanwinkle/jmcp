@@ -1,9 +1,10 @@
 import json
 import logging
-import os
 import urllib.error
 import urllib.parse
 import urllib.request
+
+from jmcp import config
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +13,7 @@ TOOL_DEF = {
     "description": (
         "Search the web via the Kagi Search API. Returns a numbered list of "
         "results (title, URL, snippet) plus related-search suggestions. "
-        "Requires KAGI_API_KEY in the environment."
+        f"Requires kagi.api_key in {config.CONFIG_PATH}."
     ),
     "inputSchema": {
         "type": "object",
@@ -72,9 +73,9 @@ def _format_results(payload: dict) -> str:
 
 
 def execute(query: str, limit: int = DEFAULT_LIMIT) -> str:
-    api_key = os.environ.get("KAGI_API_KEY")
+    api_key = config.load().get("kagi", {}).get("api_key")
     if not api_key:
-        return "Error: KAGI_API_KEY is not set in the environment."
+        return f"Error: kagi.api_key is not set in {config.CONFIG_PATH}."
 
     limit = max(1, min(MAX_LIMIT, int(limit)))
 

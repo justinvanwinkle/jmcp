@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec uvx --no-cache --from "$(dirname "$(readlink -f "$0")")" jmcp "$@"
