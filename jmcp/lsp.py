@@ -41,9 +41,14 @@ class LspClient:
         self._reader_thread.start()
 
         # Initialize
+        root_uri = self._path_to_uri(self._root)
         self.request(
             "initialize",
-            {"rootUri": self._path_to_uri(self._root), "capabilities": {}},
+            {
+                "rootUri": root_uri,
+                "workspaceFolders": [{"uri": root_uri, "name": self._root.name}],
+                "capabilities": {},
+            },
         )
         self.notify("initialized", {})
 
@@ -175,6 +180,27 @@ class LspClient:
             {
                 "textDocument": {"uri": uri},
                 "position": {"line": line, "character": character},
+            },
+        )
+
+    def find_references(
+        self,
+        file_path: str,
+        line: int,
+        character: int = 0,
+        *,
+        include_declaration: bool = False,
+    ):
+        self.ensure_open(file_path)
+        uri = self._path_to_uri(file_path)
+
+        # LSP uses 0-based lines
+        return self.request(
+            "textDocument/references",
+            {
+                "textDocument": {"uri": uri},
+                "position": {"line": line, "character": character},
+                "context": {"includeDeclaration": include_declaration},
             },
         )
 

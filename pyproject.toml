@@ -29,6 +29,9 @@ ignore = [
     "EM102",   # f-string in exceptions
     "PLW2901", # loop var overwritten — idiomatic .strip()
     "COM812",  # trailing comma — conflicts with formatter
+    "PLC0415", # lazy imports — intentional for circular dep avoidance
+    "PLR0913", # too many args — sometimes unavoidable
+    "PERF401", # list.extend — readability preference
 ]
 
 [tool.ruff.lint.per-file-ignores]
