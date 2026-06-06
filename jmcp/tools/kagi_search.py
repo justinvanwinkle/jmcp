@@ -21,10 +21,12 @@ TOOL_DEF = {
             "query": {"type": "string", "description": "The search query."},
             "limit": {
                 "type": "integer",
-                "description": "Maximum number of results (1-10). Defaults to 5.",
-                "default": 5,
+                "description": (
+                    "Maximum number of results (1-1024). Defaults to 128."
+                ),
+                "default": 128,
                 "minimum": 1,
-                "maximum": 10,
+                "maximum": 1024,
             },
         },
         "required": ["query"],
@@ -33,8 +35,8 @@ TOOL_DEF = {
 
 API_URL = "https://kagi.com/api/v0/search"
 TIMEOUT_SECONDS = 30
-DEFAULT_LIMIT = 5
-MAX_LIMIT = 10
+DEFAULT_LIMIT = 128
+MAX_LIMIT = 1024
 
 
 def _fetch(query: str, limit: int, api_key: str) -> dict:
