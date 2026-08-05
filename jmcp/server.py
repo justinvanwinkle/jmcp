@@ -3,7 +3,6 @@ from jmcp.tools import code_navigation
 from jmcp.tools import code_search
 from jmcp.tools import deep_search
 from jmcp.tools import find_references
-from jmcp.tools import kagi_search
 
 PROTOCOL_VERSION = "2025-03-26"
 
@@ -23,7 +22,6 @@ TOOLS = [
     code_navigation.TOOL_DEF,
     deep_search.TOOL_DEF,
     find_references.TOOL_DEF,
-    kagi_search.TOOL_DEF,
     add_import.TOOL_DEF,
 ]
 
@@ -46,11 +44,6 @@ def handle_tool_call(name, arguments):
                 arguments["line"],
                 arguments.get("col", 0),
                 include_declaration=arguments.get("include_declaration", False),
-            )
-        case "kagi_search":
-            return kagi_search.execute(
-                arguments["query"],
-                arguments.get("limit", kagi_search.DEFAULT_LIMIT),
             )
         case "add_import":
             return add_import.execute(arguments["imports"], arguments["files"])
